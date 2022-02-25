@@ -13,7 +13,8 @@ import {
   StackDivider,
   Stack,
   Button,
-  Image
+  Image,
+  LightMode
 } from "@chakra-ui/react";
 import { NATIVE_MINT } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
@@ -24,6 +25,8 @@ import { route, routes } from "../../../utils/routes";
 import { useMembershipVoucher } from "../../hooks/useMembershipVoucher";
 import { numberWithCommas } from "@strata-foundation/marketplace-ui";
 import BN from "bn.js";
+import { MembershipModel } from "@hydra/fanout";
+import { GiPentarrowsTornado } from "react-icons/gi";
 
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -97,11 +100,34 @@ export const Fanout = ({ name }: { name: string }) => {
     <Container rounded="lg" maxW={"container.lg"}>
       <VStack w="full">
         <VStack align="left" w="full" shadow="xl" rounded="lg" p="16px">
-          <Heading size="lg">{name && capitalizeFirstLetter(name)}</Heading>
+          <Stack
+            direction={["column", "column", "row"]}
+            justifyContent={["start", "start", "space-between"]}
+          >
+            <Heading size="lg">{name && capitalizeFirstLetter(name)}</Heading>
+            {/* TODO: Distribute */}
+            <LightMode>
+              <Button
+                onClick={() => {}}
+                variant="outline"
+                colorScheme="primary"
+                leftIcon={<Icon as={GiPentarrowsTornado} />}
+              >
+                Fanout
+              </Button>
+            </LightMode>
+          </Stack>
+
           <SimpleGrid columns={[1, 2, 3, 4]}>
             <Holding mint={NATIVE_MINT} amount={solOwnedAmount} />
-            {tokens?.map(token => {
-              return <Holding key={token.pubkey.toBase58()} mint={token.info.mint} amount={token.info.amount} />;
+            {tokens?.map((token) => {
+              return (
+                <Holding
+                  key={token.pubkey.toBase58()}
+                  mint={token.info.mint}
+                  amount={token.info.amount}
+                />
+              );
             })}
           </SimpleGrid>
         </VStack>
@@ -111,13 +137,25 @@ export const Fanout = ({ name }: { name: string }) => {
             justifyContent={["start", "start", "space-between"]}
           >
             <Heading size="lg">Holders</Heading>
-            <Button
-              onClick={() => router.push(route(routes.addMember, { name }))}
-              variant="outline"
-              leftIcon={<Icon as={AiOutlinePlusCircle} />}
-            >
-              Add
-            </Button>
+            {fanout?.membershipModel !== MembershipModel.Token && (
+              <Button
+                onClick={() => router.push(route(routes.addMember, { name }))}
+                variant="outline"
+                leftIcon={<Icon as={AiOutlinePlusCircle} />}
+              >
+                Add
+              </Button>
+            )}
+            {/* TODO: Stake and unstake */}
+            {fanout?.membershipModel === MembershipModel.Token && (
+              <Button
+                onClick={() => {}}
+                variant="outline"
+                leftIcon={<Icon as={AiOutlinePlusCircle} />}
+              >
+                Stake
+              </Button>
+            )}
           </Stack>
           <VStack
             p={4}
@@ -131,7 +169,9 @@ export const Fanout = ({ name }: { name: string }) => {
               />
             }
           >
-            {members?.map(member => <Member member={member} key={member.toBase58()} />)}
+            {members?.map((member) => (
+              <Member member={member} key={member.toBase58()} />
+            ))}
           </VStack>
         </VStack>
       </VStack>
