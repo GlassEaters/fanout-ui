@@ -1,4 +1,4 @@
-import { FanoutMembershipVoucher } from "@hydra/fanout";
+import { FanoutMembershipVoucher } from "@glasseaters/hydra-sdk";
 import { PublicKey } from "@solana/web3.js";
 import { useAccount, UseAccountState } from "@strata-foundation/react";
 

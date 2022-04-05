@@ -1,4 +1,4 @@
-import { Fanout } from "@hydra/fanout";
+import { Fanout } from "@glasseaters/hydra-sdk";
 import { PublicKey } from "@solana/web3.js";
 import { useAccount, UseAccountState } from "@strata-foundation/react";
 

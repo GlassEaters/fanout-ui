@@ -1,4 +1,4 @@
-import { FanoutClient, Wallet } from "@hydra/fanout";
+import { FanoutClient, Wallet } from "@glasseaters/hydra-sdk";
 import { Connection } from "@solana/web3.js";
 import { useProvider } from "@strata-foundation/react";
 import React, { useContext, useMemo } from "react";

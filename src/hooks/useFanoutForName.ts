@@ -1,5 +1,5 @@
 import { useFanoutClient } from "@/contexts/FanoutClientContext";
-import { FanoutClient } from "@hydra/fanout";
+import { FanoutClient } from "@glasseaters/hydra-sdk";
 import { IFanout, useFanout } from "./useFanout"
 import { useAsync } from "react-async-hook";
 import { useAccount, UseAccountState } from "@strata-foundation/react";

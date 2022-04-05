@@ -6,7 +6,7 @@ import {
   Input, VStack
 } from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { FanoutClient, MembershipModel } from "@hydra/fanout";
+import { FanoutClient, MembershipModel } from "@glasseaters/hydra-sdk";
 import { PublicKey } from "@solana/web3.js";
 import { Recipient } from "@strata-foundation/marketplace-ui";
 import {

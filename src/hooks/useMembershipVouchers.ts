@@ -3,7 +3,7 @@ import BN from "bn.js";
 import bs58 from "bs58";
 import { BorshAccountsCoder } from "@project-serum/anchor";
 import { useConnection } from "@solana/wallet-adapter-react";
-import { FanoutClient } from "@hydra/fanout";
+import { FanoutClient } from "@glasseaters/hydra-sdk";
 import { useAsync } from "react-async-hook";
 
 interface IMemberVouchers {
