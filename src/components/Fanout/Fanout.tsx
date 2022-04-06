@@ -29,9 +29,11 @@ import {
   Notification,
   useWalletTokenAccounts,
   useErrorHandler,
+  useOwnedAmount,
+  useAssociatedAccount,
 } from "@strata-foundation/react";
 import { useRouter } from "next/router";
-import { AiOutlinePlusCircle } from "react-icons/ai";
+import { AiOutlinePlusCircle, AiOutlineMinusCircle } from "react-icons/ai";
 import { route, routes } from "../../../utils/routes";
 import { useMembershipVoucher } from "../../hooks/useMembershipVoucher";
 import { numberWithCommas } from "@strata-foundation/marketplace-ui";
@@ -45,6 +47,8 @@ import { useFanoutClient } from "../../contexts/FanoutClientContext";
 import copy from "copy-to-clipboard";
 import toast from "react-hot-toast";
 import { Program } from "@project-serum/anchor";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useMembershipVoucherForMember } from "../../hooks/useMembershipVoucherForMember";
 
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -150,6 +154,37 @@ async function runFanout({ fanoutSdk, fanout, tokens }: { fanoutSdk: FanoutClien
   );
 }
 
+async function runStake({ fanoutSdk, fanout, amount }: { amount: number, fanoutSdk: FanoutClient, fanout: PublicKey }): Promise<void> {
+  await fanoutSdk.stakeTokenMember({
+    fanout,
+    member: fanoutSdk.wallet.publicKey,
+    payer: fanoutSdk.wallet.publicKey,
+    shares: amount
+  });
+}
+
+async function runUnStake({
+  fanoutSdk,
+  fanout,
+}: {
+  fanoutSdk: FanoutClient;
+  fanout: PublicKey;
+}): Promise<void> {
+  await fanoutSdk.unstakeTokenMember({
+    fanout,
+    member: fanoutSdk.wallet.publicKey,
+    payer: fanoutSdk.wallet.publicKey,
+  });
+}
+
+function toBN(bnOrNumber: BN | number): BN {
+  if (BN.isBN(bnOrNumber)) {
+    return bnOrNumber
+  }
+
+  return new BN(bnOrNumber as number);
+}
+
 export const Fanout = ({ name }: { name: string }) => {
   const router = useRouter();
   const { info: fanout } = useFanoutForName(name);
@@ -160,14 +195,38 @@ export const Fanout = ({ name }: { name: string }) => {
     fanout?.accountKey,
     (_, account) => account.lamports
   );
+  const { publicKey } = useWallet();
+  const tokenSharesAmount = useOwnedAmount(fanout?.membershipMint);
+  const { info: membershipVoucher } = useMembershipVoucherForMember(fanout?.publicKey, publicKey || undefined);
+  const memberMint = useMint(fanout?.membershipMint);
+  const stakedAmount = useMemo(() => memberMint && membershipVoucher && amountAsNum(toBN(membershipVoucher?.shares), memberMint), [membershipVoucher, memberMint])
+  const { associatedAccount } = useAssociatedAccount(
+    publicKey,
+    fanout?.membershipMint
+  );
+
   const solOwnedAmountBn = useMemo(() => {
     if (solOwnedAmount && !isNaN(solOwnedAmount)) {
       return new BN(solOwnedAmount);
     }
+
+    if (solOwnedAmount) {
+      return new BN(0)
+    }
   }, [solOwnedAmount]);
-  const { execute, loading, result, error } = useAsyncCallback(runFanout)
+  const { execute, loading, error } = useAsyncCallback(runFanout)
+  const {
+    execute: stake,
+    loading: stakeLoading,
+    error: stakeError,
+  } = useAsyncCallback(runStake);
+  const {
+    execute: unstake,
+    loading: unstakeLoading,
+    error: unstakeError,
+  } = useAsyncCallback(runUnStake);
   const { handleErrors } = useErrorHandler();
-  handleErrors(error)
+  handleErrors(error, stakeError, unstakeError);
   
   return (
     <Container rounded="lg" maxW={"container.lg"}>
@@ -210,7 +269,7 @@ export const Fanout = ({ name }: { name: string }) => {
                     fanoutSdk: fanoutClient!,
                     fanout: fanout!.publicKey,
                     tokens,
-                  })
+                  });
                   toast.custom((t) => (
                     <Notification
                       type="info"
@@ -259,16 +318,63 @@ export const Fanout = ({ name }: { name: string }) => {
                 Add
               </Button>
             )}
-            {/* TODO: Stake and unstake */}
-            {fanout?.membershipModel === MembershipModel.Token && (
-              <Button
-                onClick={() => {}}
-                variant="outline"
-                leftIcon={<Icon as={AiOutlinePlusCircle} />}
-              >
-                Stake
-              </Button>
-            )}
+            {fanout?.membershipModel === MembershipModel.Token && tokenSharesAmount && (
+                <Button
+                  isDisabled={!tokenSharesAmount}
+                  isLoading={stakeLoading}
+                  onClick={async () => {
+                    await stake({
+                      fanoutSdk: fanoutClient!,
+                      fanout: fanout.publicKey,
+                      amount: associatedAccount!.amount.toNumber(),
+                    });
+                    toast.custom((t) => (
+                      <Notification
+                        type="info"
+                        show={t.visible}
+                        heading={"Stake Successful"}
+                        // @ts-ignore
+                        message={"Successfully staked your token shares"}
+                        onDismiss={() => toast.dismiss(t.id)}
+                      />
+                    ));
+                  }}
+                  variant="outline"
+                  leftIcon={<Icon as={AiOutlinePlusCircle} />}
+                >
+                  {tokenSharesAmount
+                    ? `Stake ${numberWithCommas(tokenSharesAmount, 2)}`
+                    : "No Shares"}
+                </Button>
+              )}
+            {fanout?.membershipModel === MembershipModel.Token &&
+              membershipVoucher && (
+                <Button
+                  isLoading={unstakeLoading}
+                  onClick={async () => {
+                    await unstake({
+                      fanoutSdk: fanoutClient!,
+                      fanout: fanout.publicKey,
+                    });
+                    toast.custom((t) => (
+                      <Notification
+                        type="info"
+                        show={t.visible}
+                        heading={"Unstake Successful"}
+                        // @ts-ignore
+                        message={"Successfully unstaked your token shares"}
+                        onDismiss={() => toast.dismiss(t.id)}
+                      />
+                    ));
+                  }}
+                  variant="outline"
+                  leftIcon={<Icon as={AiOutlineMinusCircle} />}
+                >
+                  {stakedAmount
+                    ? `Unstake ${numberWithCommas(stakedAmount, 2)}`
+                    : "No Shares"}
+                </Button>
+              )}
           </Stack>
           <VStack
             p={4}
