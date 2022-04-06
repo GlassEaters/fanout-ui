@@ -17,7 +17,7 @@ const AddNew: NextPage = () => {
       </Head>
 
       <main>
-        <FormContainer label="Create Fanout">
+        <FormContainer label="Add Member">
           <AddMemberForm name={name as string} />
         </FormContainer>
       </main>

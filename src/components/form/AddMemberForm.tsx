@@ -45,12 +45,14 @@ async function addMember(
         shares: values.shares,
         membershipKey: member,
       });
+      break;
     case MembershipModel.Wallet:
       await fanoutClient.addMemberWallet({
         fanout: fanout.publicKey,
         shares: values.shares,
         membershipKey: member,
       });
+      break;
   }
 }
 

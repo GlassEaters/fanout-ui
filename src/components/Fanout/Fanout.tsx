@@ -96,7 +96,7 @@ const Holding = ({
 const Member = ({ member }: { member: PublicKey | undefined }) => {
   const { info: voucher, loading } = useMembershipVoucher(member)
   return (
-    <HStack justifyContent="space-between" p={2}>
+    <HStack justifyContent="space-between" p={2} w="full">
       {loading && <Skeleton width="250px" />}
       {!loading && (
         <>
@@ -177,6 +177,18 @@ async function runUnStake({
   });
 }
 
+async function runRemoveMember({
+  fanoutSdk,
+  fanout,
+  member
+}: {
+  fanoutSdk: FanoutClient;
+  fanout: PublicKey;
+  member: PublicKey;
+}): Promise<void> {
+  throw new Error("Not yet supported")
+}
+
 function toBN(bnOrNumber: BN | number): BN {
   if (BN.isBN(bnOrNumber)) {
     return bnOrNumber
@@ -204,6 +216,7 @@ export const Fanout = ({ name }: { name: string }) => {
     publicKey,
     fanout?.membershipMint
   );
+  const isAdmin = fanout && publicKey?.equals(fanout?.authority)
 
   const solOwnedAmountBn = useMemo(() => {
     if (solOwnedAmount && !isNaN(solOwnedAmount)) {
@@ -225,8 +238,13 @@ export const Fanout = ({ name }: { name: string }) => {
     loading: unstakeLoading,
     error: unstakeError,
   } = useAsyncCallback(runUnStake);
+  const {
+    execute: removeMember,
+    loading: removeMemberLoading,
+    error: removeMemberError,
+  } = useAsyncCallback(runRemoveMember);
   const { handleErrors } = useErrorHandler();
-  handleErrors(error, stakeError, unstakeError);
+  handleErrors(error, stakeError, unstakeError, removeMemberError);
   
   return (
     <Container rounded="lg" maxW={"container.lg"}>
@@ -318,7 +336,8 @@ export const Fanout = ({ name }: { name: string }) => {
                 Add
               </Button>
             )}
-            {fanout?.membershipModel === MembershipModel.Token && tokenSharesAmount && (
+            {fanout?.membershipModel === MembershipModel.Token &&
+              tokenSharesAmount && (
                 <Button
                   isDisabled={!tokenSharesAmount}
                   isLoading={stakeLoading}
@@ -389,7 +408,35 @@ export const Fanout = ({ name }: { name: string }) => {
             }
           >
             {members?.map((member) => (
-              <Member member={member} key={member.toBase58()} />
+              <HStack key={member.toBase58()} w="full" justify="stretch">
+                <Member member={member} />
+                {isAdmin && fanout?.membershipModel !== MembershipModel.Token && (
+                  <IconButton
+                    title="Remove Member not yet Supported"
+                    aria-label="Remove Member not yet Supported"
+                    icon={<Icon as={AiOutlineMinusCircle} />}
+                    isLoading={removeMemberLoading}
+                    isDisabled={true}
+                    onClick={() => {
+                      removeMember({
+                        fanoutSdk: fanoutClient!,
+                        fanout: fanout?.publicKey!,
+                        member,
+                      });
+                      toast.custom((t) => (
+                        <Notification
+                          type="info"
+                          show={t.visible}
+                          heading={"Remove Successful"}
+                          // @ts-ignore
+                          message={`Successfully removed member ${member.toBase58()}`}
+                          onDismiss={() => toast.dismiss(t.id)}
+                        />
+                      ));
+                    }}
+                  ></IconButton>
+                )}
+              </HStack>
             ))}
           </VStack>
         </VStack>
