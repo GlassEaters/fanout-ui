@@ -3287,8 +3287,8 @@ __metadata:
     "@solana/wallet-adapter-wallets": ^0.14.3
     "@solana/web3.js": ^1.32.0
     "@solflare-wallet/sdk": ^1.0.11
-    "@strata-foundation/marketplace-ui": ^3.4.6
-    "@strata-foundation/react": ^3.4.6
+    "@strata-foundation/marketplace-ui": ^3.4.8-alpha.0
+    "@strata-foundation/react": ^3.4.8-alpha.0
     "@types/node": 17.0.8
     "@types/react": 17.0.38
     copy-to-clipboard: ^3.3.1
@@ -3658,9 +3658,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@strata-foundation/marketplace-ui@npm:^3.4.6":
-  version: 3.4.7
-  resolution: "@strata-foundation/marketplace-ui@npm:3.4.7"
+"@strata-foundation/marketplace-ui@npm:^3.4.8-alpha.0":
+  version: 3.4.8-alpha.0
+  resolution: "@strata-foundation/marketplace-ui@npm:3.4.8-alpha.0"
   dependencies:
     "@chakra-ui/icons": ^1.1.7
     "@chakra-ui/react": ^1.8.1
@@ -3675,7 +3675,7 @@ __metadata:
     "@solana/wallet-adapter-wallets": ^0.14.3
     "@solana/web3.js": ^1.32.0
     "@strata-foundation/marketplace-sdk": ^3.4.5
-    "@strata-foundation/react": ^3.4.7
+    "@strata-foundation/react": ^3.4.8-alpha.0
     "@strata-foundation/web3-token-auth": ^3.4.6
     "@types/auth0-js": ^9.14.5
     "@types/node-localstorage": ^1.3.0
@@ -3699,13 +3699,13 @@ __metadata:
     react-hot-toast: ^2.2.0
     recharts: ^2.1.9
     yup: ^0.32.11
-  checksum: 3562e74e6afab45b2ebcda6f599632e1dcdccabc0d11f9e5581ae6157eb1106c2f0b379a27437f98325af2d90320a5f6b56a1496aba3b2ad5ce591f8b2f6060e
+  checksum: c63cb1a19b7c07216cfeed1a8ce2ef6533446911f317a8fef15a42126fe12f48e953524282ca1e3c4785ad54d2e68fbecbcb489248e4e839918168b94b194748
   languageName: node
   linkType: hard
 
-"@strata-foundation/react@npm:^3.4.6, @strata-foundation/react@npm:^3.4.7":
-  version: 3.4.7
-  resolution: "@strata-foundation/react@npm:3.4.7"
+"@strata-foundation/react@npm:^3.4.8-alpha.0":
+  version: 3.4.8-alpha.0
+  resolution: "@strata-foundation/react@npm:3.4.8-alpha.0"
   dependencies:
     "@chakra-ui/react": ^1.7.2
     "@emotion/react": ^11.6.0
@@ -3742,7 +3742,7 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17 || ^18
     react-dom: ^16.8 || ^17 || ^18
-  checksum: d006b64fbe358a88fd9c2aa2c2a24b426a5c1d0e804f3a1c729c00d3ddf011410ed976bb2c9c67247ebefc8657ea80c6f191fb9d991d6af8dd5359f0f5307ef1
+  checksum: 17b57522425e52bb0f46a90d2c24a0c4ecb1c49e666db22bcf8cf9a6b893998ba0eac937dbc24686ff876ffc6d44b32f1bae5a4d11a2eafaa14a043ef4a3021f
   languageName: node
   linkType: hard
 

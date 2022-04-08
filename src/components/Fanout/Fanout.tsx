@@ -29,9 +29,11 @@ import {
   Notification,
   useWalletTokenAccounts,
   useErrorHandler,
+  useOwnedAmount,
+  useAssociatedAccount,
 } from "@strata-foundation/react";
 import { useRouter } from "next/router";
-import { AiOutlinePlusCircle } from "react-icons/ai";
+import { AiOutlinePlusCircle, AiOutlineMinusCircle } from "react-icons/ai";
 import { route, routes } from "../../../utils/routes";
 import { useMembershipVoucher } from "../../hooks/useMembershipVoucher";
 import { numberWithCommas } from "@strata-foundation/marketplace-ui";
@@ -45,6 +47,8 @@ import { useFanoutClient } from "../../contexts/FanoutClientContext";
 import copy from "copy-to-clipboard";
 import toast from "react-hot-toast";
 import { Program } from "@project-serum/anchor";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useMembershipVoucherForMember } from "../../hooks/useMembershipVoucherForMember";
 
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -92,7 +96,7 @@ const Holding = ({
 const Member = ({ member }: { member: PublicKey | undefined }) => {
   const { info: voucher, loading } = useMembershipVoucher(member)
   return (
-    <HStack justifyContent="space-between" p={2}>
+    <HStack justifyContent="space-between" p={2} w="full">
       {loading && <Skeleton width="250px" />}
       {!loading && (
         <>
@@ -150,6 +154,49 @@ async function runFanout({ fanoutSdk, fanout, tokens }: { fanoutSdk: FanoutClien
   );
 }
 
+async function runStake({ fanoutSdk, fanout, amount }: { amount: number, fanoutSdk: FanoutClient, fanout: PublicKey }): Promise<void> {
+  await fanoutSdk.stakeTokenMember({
+    fanout,
+    member: fanoutSdk.wallet.publicKey,
+    payer: fanoutSdk.wallet.publicKey,
+    shares: amount
+  });
+}
+
+async function runUnStake({
+  fanoutSdk,
+  fanout,
+}: {
+  fanoutSdk: FanoutClient;
+  fanout: PublicKey;
+}): Promise<void> {
+  await fanoutSdk.unstakeTokenMember({
+    fanout,
+    member: fanoutSdk.wallet.publicKey,
+    payer: fanoutSdk.wallet.publicKey,
+  });
+}
+
+async function runRemoveMember({
+  fanoutSdk,
+  fanout,
+  member
+}: {
+  fanoutSdk: FanoutClient;
+  fanout: PublicKey;
+  member: PublicKey;
+}): Promise<void> {
+  throw new Error("Not yet supported")
+}
+
+function toBN(bnOrNumber: BN | number): BN {
+  if (BN.isBN(bnOrNumber)) {
+    return bnOrNumber
+  }
+
+  return new BN(bnOrNumber as number);
+}
+
 export const Fanout = ({ name }: { name: string }) => {
   const router = useRouter();
   const { info: fanout } = useFanoutForName(name);
@@ -160,14 +207,44 @@ export const Fanout = ({ name }: { name: string }) => {
     fanout?.accountKey,
     (_, account) => account.lamports
   );
+  const { publicKey } = useWallet();
+  const tokenSharesAmount = useOwnedAmount(fanout?.membershipMint);
+  const { info: membershipVoucher } = useMembershipVoucherForMember(fanout?.publicKey, publicKey || undefined);
+  const memberMint = useMint(fanout?.membershipMint);
+  const stakedAmount = useMemo(() => memberMint && membershipVoucher && amountAsNum(toBN(membershipVoucher?.shares), memberMint), [membershipVoucher, memberMint])
+  const { associatedAccount } = useAssociatedAccount(
+    publicKey,
+    fanout?.membershipMint
+  );
+  const isAdmin = fanout && publicKey?.equals(fanout?.authority)
+
   const solOwnedAmountBn = useMemo(() => {
     if (solOwnedAmount && !isNaN(solOwnedAmount)) {
       return new BN(solOwnedAmount);
     }
+
+    if (solOwnedAmount) {
+      return new BN(0)
+    }
   }, [solOwnedAmount]);
-  const { execute, loading, result, error } = useAsyncCallback(runFanout)
+  const { execute, loading, error } = useAsyncCallback(runFanout)
+  const {
+    execute: stake,
+    loading: stakeLoading,
+    error: stakeError,
+  } = useAsyncCallback(runStake);
+  const {
+    execute: unstake,
+    loading: unstakeLoading,
+    error: unstakeError,
+  } = useAsyncCallback(runUnStake);
+  const {
+    execute: removeMember,
+    loading: removeMemberLoading,
+    error: removeMemberError,
+  } = useAsyncCallback(runRemoveMember);
   const { handleErrors } = useErrorHandler();
-  handleErrors(error)
+  handleErrors(error, stakeError, unstakeError, removeMemberError);
   
   return (
     <Container rounded="lg" maxW={"container.lg"}>
@@ -210,7 +287,7 @@ export const Fanout = ({ name }: { name: string }) => {
                     fanoutSdk: fanoutClient!,
                     fanout: fanout!.publicKey,
                     tokens,
-                  })
+                  });
                   toast.custom((t) => (
                     <Notification
                       type="info"
@@ -259,16 +336,64 @@ export const Fanout = ({ name }: { name: string }) => {
                 Add
               </Button>
             )}
-            {/* TODO: Stake and unstake */}
-            {fanout?.membershipModel === MembershipModel.Token && (
-              <Button
-                onClick={() => {}}
-                variant="outline"
-                leftIcon={<Icon as={AiOutlinePlusCircle} />}
-              >
-                Stake
-              </Button>
-            )}
+            {fanout?.membershipModel === MembershipModel.Token &&
+              tokenSharesAmount && (
+                <Button
+                  isDisabled={!tokenSharesAmount}
+                  isLoading={stakeLoading}
+                  onClick={async () => {
+                    await stake({
+                      fanoutSdk: fanoutClient!,
+                      fanout: fanout.publicKey,
+                      amount: associatedAccount!.amount.toNumber(),
+                    });
+                    toast.custom((t) => (
+                      <Notification
+                        type="info"
+                        show={t.visible}
+                        heading={"Stake Successful"}
+                        // @ts-ignore
+                        message={"Successfully staked your token shares"}
+                        onDismiss={() => toast.dismiss(t.id)}
+                      />
+                    ));
+                  }}
+                  variant="outline"
+                  leftIcon={<Icon as={AiOutlinePlusCircle} />}
+                >
+                  {tokenSharesAmount
+                    ? `Stake ${numberWithCommas(tokenSharesAmount, 2)}`
+                    : "No Shares"}
+                </Button>
+              )}
+            {fanout?.membershipModel === MembershipModel.Token &&
+              membershipVoucher && (
+                <Button
+                  isLoading={unstakeLoading}
+                  onClick={async () => {
+                    await unstake({
+                      fanoutSdk: fanoutClient!,
+                      fanout: fanout.publicKey,
+                    });
+                    toast.custom((t) => (
+                      <Notification
+                        type="info"
+                        show={t.visible}
+                        heading={"Unstake Successful"}
+                        // @ts-ignore
+                        message={"Successfully unstaked your token shares"}
+                        onDismiss={() => toast.dismiss(t.id)}
+                      />
+                    ));
+                  }}
+                  variant="outline"
+                  leftIcon={<Icon as={AiOutlineMinusCircle} />}
+                >
+                  {stakedAmount
+                    ? `Unstake ${numberWithCommas(stakedAmount, 2)}`
+                    : "No Shares"}
+                </Button>
+              )}
           </Stack>
           <VStack
             p={4}
@@ -283,7 +408,35 @@ export const Fanout = ({ name }: { name: string }) => {
             }
           >
             {members?.map((member) => (
-              <Member member={member} key={member.toBase58()} />
+              <HStack key={member.toBase58()} w="full" justify="stretch">
+                <Member member={member} />
+                {isAdmin && fanout?.membershipModel !== MembershipModel.Token && (
+                  <IconButton
+                    title="Remove Member not yet Supported"
+                    aria-label="Remove Member not yet Supported"
+                    icon={<Icon as={AiOutlineMinusCircle} />}
+                    isLoading={removeMemberLoading}
+                    isDisabled={true}
+                    onClick={() => {
+                      removeMember({
+                        fanoutSdk: fanoutClient!,
+                        fanout: fanout?.publicKey!,
+                        member,
+                      });
+                      toast.custom((t) => (
+                        <Notification
+                          type="info"
+                          show={t.visible}
+                          heading={"Remove Successful"}
+                          // @ts-ignore
+                          message={`Successfully removed member ${member.toBase58()}`}
+                          onDismiss={() => toast.dismiss(t.id)}
+                        />
+                      ));
+                    }}
+                  ></IconButton>
+                )}
+              </HStack>
             ))}
           </VStack>
         </VStack>

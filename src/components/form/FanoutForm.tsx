@@ -7,10 +7,12 @@ import { FanoutClient, MembershipModel } from "@glasseaters/hydra-sdk";
 import { PublicKey } from "@solana/web3.js";
 import { MintSelect } from "@strata-foundation/marketplace-ui";
 import {
-  useProvider
+  useMint,
+  useProvider,
+  usePublicKey
 } from "@strata-foundation/react";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect } from "react";
 import { useAsyncCallback } from "react-async-hook";
 import { FormProvider, useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -76,6 +78,14 @@ export const FanoutForm: React.FC = () => {
     );
   };
 
+  const { mint } = watch();
+  const mintPkey = usePublicKey(mint);
+  const mintAcc = useMint(mintPkey)
+
+  useEffect(() => {
+    setValue("totalShares", mintAcc?.supply)
+  }, [mintAcc])
+
   const membershipModel = watch("membershipModel");
   return (
     <FormProvider {...formProps}>
@@ -109,7 +119,7 @@ export const FanoutForm: React.FC = () => {
           {membershipModel == MembershipModel.Token && (
             <FormControlWithError
               id="mint"
-              help={`The mint representing shares in this fanout.`}
+              help={`The mint representing shares in this fanout. You can create one at app.strataprotocol.com`}
               label="Mint"
               errors={errors}
             >
