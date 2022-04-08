@@ -2229,9 +2229,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@glasseaters/hydra-sdk@portal:/Users/nprince/source/hydra/packages/sdk::locator=%40solana%2Fwallet-adapter-nextjs-starter%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@glasseaters/hydra-sdk@portal:/Users/nprince/source/hydra/packages/sdk::locator=%40solana%2Fwallet-adapter-nextjs-starter%40workspace%3A."
+"@glasseaters/hydra-sdk@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@glasseaters/hydra-sdk@npm:0.3.0"
   dependencies:
     "@metaplex-foundation/beet": 0.0.8
     "@metaplex-foundation/beet-solana": 0.0.6
@@ -2240,8 +2240,9 @@ __metadata:
     "@solana/spl-token": ^0.1.8
     "@solana/web3.js": ^1.31.0
     bn.js: ^5.2.0
+  checksum: 476940c5551cc1a3c37e9298786dc2d0840eb17aaa8646272a3b7957508cf9e2df18413f0d7c3571d206478f72bc3fb9d7913964857c76e62ff95214d92d34e0
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "@hapi/accept@npm:5.0.2":
   version: 5.0.2
@@ -3276,7 +3277,7 @@ __metadata:
   resolution: "@solana/wallet-adapter-nextjs-starter@workspace:."
   dependencies:
     "@chakra-ui/react": ^1.8.5
-    "@glasseaters/hydra-sdk": ^0.2.0
+    "@glasseaters/hydra-sdk": ^0.3.0
     "@metaplex-foundation/mpl-token-metadata": ^1.2.4
     "@project-serum/anchor": ^0.22.0
     "@project-serum/borsh": ^0.2.5
@@ -12586,7 +12587,7 @@ __metadata:
 
 "typescript@patch:typescript@~4.4.4#~builtin<compat/typescript>":
   version: 4.4.4
-  resolution: "typescript@patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=142761"
+  resolution: "typescript@patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=bda367"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
