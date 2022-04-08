@@ -39,7 +39,7 @@ export const Header: React.FC = () => {
         >
           <Link href="/">
             {/* <Image alt="Strata Marketplace" src="/logo.svg" /> */}
-            <Heading size="lg">Fanout</Heading>
+            <Heading size="lg">Hydra</Heading>
           </Link>
           <Box
             display={{ md: "block" }}

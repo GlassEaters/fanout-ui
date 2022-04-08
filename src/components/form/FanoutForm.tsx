@@ -93,7 +93,7 @@ export const FanoutForm: React.FC = () => {
         <VStack spacing={8}>
           <FormControlWithError
             id="membershipModel"
-            help="The membership model for this fanout. NFT means nft holders split this fanout. You will need to add NFTs to the fanout. Token means that token holders split this fannout. Wallet functions like the metaplex nft creators array, an admin manually manages shares."
+            help="The membership model for this Hydra. NFT means nft holders split this Hydra. You will need to add NFTs to the Hydra. Token means that token holders split this Hydra. Wallet functions like the metaplex nft creators array, an admin manually manages shares."
             label="Membership Model"
             errors={errors}
           >
@@ -119,7 +119,7 @@ export const FanoutForm: React.FC = () => {
           {membershipModel == MembershipModel.Token && (
             <FormControlWithError
               id="mint"
-              help={`The mint representing shares in this fanout. You can create one at app.strataprotocol.com`}
+              help={`The mint representing shares in this Hydra. You can create one at app.strataprotocol.com, or with solana tools`}
               label="Mint"
               errors={errors}
             >
@@ -131,7 +131,7 @@ export const FanoutForm: React.FC = () => {
           )}
           <FormControlWithError
             id="totalShares"
-            help="The total number of shares in this fanout"
+            help="The total number of shares in this Hydra"
             label="Total Shares"
             errors={errors}
           >

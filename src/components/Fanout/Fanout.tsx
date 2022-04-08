@@ -292,9 +292,9 @@ export const Fanout = ({ name }: { name: string }) => {
                     <Notification
                       type="info"
                       show={t.visible}
-                      heading={"Fanout Successful"}
+                      heading={"Hydra Successful"}
                       // @ts-ignore
-                      message={"Successfully fanned out"}
+                      message={"Successfully distributed"}
                       onDismiss={() => toast.dismiss(t.id)}
                     />
                   ));
@@ -303,7 +303,7 @@ export const Fanout = ({ name }: { name: string }) => {
                 colorScheme="primary"
                 leftIcon={<Icon as={GiPentarrowsTornado} />}
               >
-                Fanout
+                Hydra
               </Button>
             </LightMode>
           </Stack>
